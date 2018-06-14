@@ -1,0 +1,58 @@
+{
+  // Read https://go.microsoft.com//fwlink//?linkid=834763 for more informations about this file.
+
+  "environments": [
+    {
+      "buildPath": "${projectDir}/build/${name}",
+      //"installPath": "${env.PROGRAMFILES}\\LibSharedMemoryObject\\${name}"
+      "installPath": "C:\\LibSharedMemoryObject\\${name}"
+    }
+  ],
+
+  "configurations": [
+    {
+      "name": "x86-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${env.buildPath}",
+      "installRoot": "${env.installPath}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x86-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "buildRoot": "${env.buildPath}",
+      "installRoot": "${env.installPath}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${env.buildPath}",
+      "installRoot": "${env.installPath}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${env.buildPath}",
+      "installRoot": "${env.installPath}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    }
+  ]
+}
