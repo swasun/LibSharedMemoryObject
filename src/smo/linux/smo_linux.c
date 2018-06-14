@@ -29,6 +29,9 @@
 /* https://code.woboq.org/qt5/include/asm/unistd_64.h.html */
 #define __NR_memfd_create 319
 
+/* @todo generate random name or specify name from parameter */
+#define SHM_NAME "testname"
+
 static bool check_if_kernel_is_greater_than_3_17() {
     struct utsname buffer;
 
