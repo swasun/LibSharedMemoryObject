@@ -26,9 +26,6 @@
 #include <sys/syscall.h> /* for syscall memfd_create() */
 #include <sys/utsname.h> /* to get the kernel version */
 
-/**/
-#define SHM_NAME "IceIceBaby"
-
 /* https://code.woboq.org/qt5/include/asm/unistd_64.h.html */
 #define __NR_memfd_create 319
 
