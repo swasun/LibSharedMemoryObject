@@ -1,0 +1,32 @@
+## Description
+
+LibSharedMemoryObject provides a simple API to load from memory shared library on both Linux and Windows.
+
+## API
+
+Example of use of API without error handling for sake of simplicity.
+
+```c
+smo_handle *handle;
+typedef void(*hello_world_func)(void);
+hello_world_func hello_world;
+
+handle = smo_open("your_id", buffer, size); // where buffer and size are the content of your memory library
+
+hello_world = smo_get_function(handle, "hello_world"); // hello world is now a ptr of the function hello_world() located in the memory library
+
+hello_world(); // print the hello world message from library
+
+smo_close(handle);
+```
+
+And that's all you need !
+
+## Dependencies
+
+* [LibErrorInterceptor](https://github.com/swasun/LibErrorInterceptor), a lightweight and cross-plateform library to handle stacktrace and logging in C99.
+
+## Implementation
+
+* The Windows implementation is from [MemoryModule](https://github.com/fancycode/MemoryModule), a library to load DLL from memory.
+* The Linux implementation opened a file descriptor in rams with `shm_open()` or the `syscall __NR_memfd_create` based on you Kernel version.
