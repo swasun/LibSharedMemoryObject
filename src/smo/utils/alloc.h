@@ -1,3 +1,22 @@
+/************************************************************************************
+* Copyright (C) 2018 by Charly Lamothe												*
+*																					*
+* This file is part of LibSharedMemorySlot.                                         *
+*																					*
+*   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
+*   it under the terms of the GNU General Public License as published by			*
+*   the Free Software Foundation, either version 3 of the License, or				*
+*   (at your option) any later version.												*
+*																					*
+*   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of					*
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the					*
+*   GNU General Public License for more details.									*
+*																					*
+*   You should have received a copy of the GNU General Public License               *
+*   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
+************************************************************************************/
+
 /**
  *  @file      alloc.h
  *  @brief     Macro functions to safely alloc/desalloc variables.
@@ -13,7 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <ei/stacktrace/stacktrace.h>
+#include <ei/ei.h>
 
 /**
  *  @brief Alloc a variable in a safe way.
@@ -31,7 +50,7 @@
 	var = NULL; \
 	var = (type*)malloc(size * sizeof(type)); \
 	memset(var, 0, size * sizeof(type)); \
-    ei_check_alloc(var) \
+    smo_check_alloc(var) \
 
 #define smo_safe_alloc_ret(var, type, size, ret) \
 	if (size <= 0) { \
@@ -68,7 +87,7 @@
 	var = NULL; \
 	var = (type*)malloc(size * sizeof(type)); \
 	memset(var, 0, size * sizeof(type)); \
-    ei_check_alloc_or_goto(var, label) \
+    smo_check_alloc_or_goto(var, label) \
 
 /**
  *  @brief Realloc a variable in a safe way.
@@ -89,7 +108,7 @@
 	} \
 	var = (type*)realloc(var, (old_size + more_size + 1) * sizeof(type)); \
 	memset(var + old_size, 0, (more_size + 1) * sizeof(type)); \
-    ei_check_alloc(var) \
+    smo_check_alloc(var) \
 
 /**
  *  @brief Realloc a variable in a safe way.
@@ -110,7 +129,7 @@
 	} \
 	var = (type*)realloc(var, (old_size + more_size + 1) * sizeof(type)); \
 	memset(var + old_size, 0, (more_size + 1) * sizeof(type)); \
-    ei_check_alloc_or_goto(var, label) \
+    smo_check_alloc_or_goto(var, label) \
 
 /**
  *  @brief Check if a variable is correctly allocated.
@@ -121,7 +140,7 @@
  *  also if the variable is set to NULL ; if it is, we add an error
  *  message to ei_stacktrace.
  */
-#define ei_check_alloc(var) \
+#define smo_check_alloc(var) \
 	if (errno == ENOMEM) { \
         ei_stacktrace_push_errno() \
         smo_safe_free(var) \
@@ -135,7 +154,7 @@
  *  @brief Same behavior than CHECK_ALLOC, but if var isn't
  *  correctly allocated, go to specified label.
  */
-#define ei_check_alloc_or_goto(var, label) \
+#define smo_check_alloc_or_goto(var, label) \
 	if (errno == ENOMEM) { \
         ei_stacktrace_push_errno() \
         smo_safe_free(var) \

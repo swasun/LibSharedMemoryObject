@@ -17,18 +17,28 @@
 *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
 ************************************************************************************/
 
-#ifndef SHAREDMEMORYOBJECT_MSO_H
-#define SHAREDMEMORYOBJECT_MSO_H
+#include <stdio.h>
+#include <Windows.h>
 
-#include <smo/api/smo_handle.h>
-#include <smo/utils/bool.h>
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	if (fdwReason == DLL_PROCESS_ATTACH)
+	{
+		// equivalent of __attribute__((constructor))...
 
-#include <stddef.h>
+		// return TRUE if succeeded, FALSE if you failed to initialize properly
+		return TRUE; // I'm assuming you succeeded.
+	}
+	else if (fdwReason == DLL_PROCESS_DETACH)
+	{
+		// equivalent of __attribute__((destructor))...
+	}
 
-smo_handle *smo_open(const char *id, unsigned char *data, size_t size);
+	// Return value is ignored when fdwReason isn't DLL_PROCESS_ATTACH, so we'll
+	// just return TRUE.
+	return TRUE;
+}
 
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name);
-
-bool smo_close(smo_handle *handle);
-
-#endif
+void hello_world(void) {
+    fprintf(stdout, "Hello world from shared object !\n");
+}

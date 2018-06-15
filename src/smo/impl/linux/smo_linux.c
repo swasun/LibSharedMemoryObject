@@ -1,3 +1,22 @@
+/************************************************************************************
+* Copyright (C) 2018 by Charly Lamothe												*
+*																					*
+* This file is part of LibSharedMemorySlot.                                         *
+*																					*
+*   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
+*   it under the terms of the GNU General Public License as published by			*
+*   the Free Software Foundation, either version 3 of the License, or				*
+*   (at your option) any later version.												*
+*																					*
+*   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of					*
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the					*
+*   GNU General Public License for more details.									*
+*																					*
+*   You should have received a copy of the GNU General Public License               *
+*   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
+************************************************************************************/
+
 /**
  * @brief 
  * 
@@ -8,6 +27,7 @@
  */
 
 #include <smo/smo.h>
+#include <smo/utils/alloc.h>
 
 #include <ei/ei.h>
 
@@ -22,15 +42,12 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <sys/mman.h> /* for shm_open() */
-//#include <sys/stat.h>
 #include <sys/syscall.h> /* for syscall memfd_create() */
 #include <sys/utsname.h> /* to get the kernel version */
+#include <dlfcn.h> /* dlsym(), dlclose() */
 
 /* https://code.woboq.org/qt5/include/asm/unistd_64.h.html */
 #define __NR_memfd_create 319
-
-/* @todo generate random name or specify name from parameter */
-#define SHM_NAME "testname"
 
 static bool check_if_kernel_is_greater_than_3_17() {
     struct utsname buffer;
@@ -50,18 +67,18 @@ static inline int memfd_create(const char *name, unsigned int flags) {
 }
 
 /* Returns a file descriptor where we can write our shared object */
-int open_ramfs() {
+static int open_ramfs(const char *id) {
 	int shm_fd;
 
 	/* Using shm_open() if kernel is under version 3.17 */
 	if (!check_if_kernel_is_greater_than_3_17()) {
-		if ((shm_fd = shm_open(SHM_NAME, O_RDWR | O_CREAT, S_IRWXU)) < 0) {
+		if ((shm_fd = shm_open(id, O_RDWR | O_CREAT, S_IRWXU)) < 0) {
 			ei_stacktrace_push_errno();
 			return false;
 		}
 	}
 	else {
-		if ((shm_fd = memfd_create(SHM_NAME, 1)) < 0) {
+		if ((shm_fd = memfd_create(id, 1)) < 0) {
 			ei_stacktrace_push_errno();
 			return false;
 		}
@@ -70,7 +87,7 @@ int open_ramfs() {
 	return shm_fd;
 }
 
-void *load_shared_object(int shm_fd) {
+static void *load_shared_object(const char *id, int shm_fd) {
 	char *path;
 	void *shared_object_handle;
 
@@ -84,7 +101,7 @@ void *load_shared_object(int shm_fd) {
 	if (check_if_kernel_is_greater_than_3_17()) {
 		snprintf(path, 1024, "/proc/%d/fd/%d", getpid(), shm_fd);
 	} else {
-		snprintf(path, 1024, "/dev/shm/%s", SHM_NAME);
+		snprintf(path, 1024, "/dev/shm/%s", id);
 	}
 
 	if (!(shared_object_handle = dlopen(path, RTLD_LAZY))) {
@@ -98,17 +115,19 @@ void *load_shared_object(int shm_fd) {
 	return shared_object_handle;
 }
 
-void *smo_open(unsigned char *data, size_t size) {
+smo_handle *smo_open(const char *id, unsigned char *data, size_t size) {
+	smo_handle *handle;
     void *shared_object_handle;
 	int shm_fd;
 
+	ei_check_parameter_or_return(id);
 	ei_check_parameter_or_return(data);
 	ei_check_parameter_or_return(size > 0);
 
 	shared_object_handle = NULL;
 	shm_fd = -1;
 
-	if (!(shm_fd = open_ramfs())) {
+	if (!(shm_fd = open_ramfs(id))) {
 		ei_stacktrace_push_msg("Failed to open ramfs file descriptor");	
 		return NULL;
 	}
@@ -121,7 +140,7 @@ void *smo_open(unsigned char *data, size_t size) {
 		return NULL;
 	}
 
-	if (!(shared_object_handle = load_shared_object(shm_fd))) {
+	if (!(shared_object_handle = load_shared_object(id, shm_fd))) {
 		ei_stacktrace_push_msg("Failed to load shared object into shm file descriptor");
 		if (close(shm_fd) != 0 && errno != 0) {
 			ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
@@ -133,5 +152,39 @@ void *smo_open(unsigned char *data, size_t size) {
 		ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
 	}
 
-	return shared_object_handle;
+	handle = smo_handle_create(id);
+	handle->object = shared_object_handle;
+
+	return handle;
+}
+
+void *smo_get_symbol(smo_handle *handle, const char *symbol_name) {
+	void *symbol;
+
+	ei_check_parameter_or_return(handle);
+	ei_check_parameter_or_return(symbol_name);
+
+	if (!(symbol = dlsym(handle->object, symbol_name))) {
+		ei_stacktrace_push_msg("Failed to get symbol with error message: '%s'", dlerror());
+		return NULL;
+	}
+
+	return symbol;
+}
+
+bool smo_close(smo_handle *handle) {
+	if (!handle) {
+		ei_logger_warn("smo handle already closed");
+		return true;
+	}
+
+	if (dlclose(handle->object) != 0) {
+		ei_stacktrace_push_msg("Failed to close handle object with error message: '%s'", dlerror());
+		smo_handle_destroy(handle);
+		return false;
+	}
+
+	smo_handle_destroy(handle);
+
+	return true;
 }

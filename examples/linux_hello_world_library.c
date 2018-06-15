@@ -17,18 +17,10 @@
 *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
 ************************************************************************************/
 
-#ifndef SHAREDMEMORYOBJECT_MSO_H
-#define SHAREDMEMORYOBJECT_MSO_H
+#include <stdio.h>
 
-#include <smo/api/smo_handle.h>
-#include <smo/utils/bool.h>
+void __attribute__ ((constructor)) hello_world(void);
 
-#include <stddef.h>
-
-smo_handle *smo_open(const char *id, unsigned char *data, size_t size);
-
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name);
-
-bool smo_close(smo_handle *handle);
-
-#endif
+void hello_world(void) {
+    fprintf(stdout, "Hello world from shared object !\n");
+}

@@ -1,4 +1,25 @@
+/************************************************************************************
+* Copyright (C) 2018 by Charly Lamothe												*
+*																					*
+* This file is part of LibSharedMemorySlot.                                         *
+*																					*
+*   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
+*   it under the terms of the GNU General Public License as published by			*
+*   the Free Software Foundation, either version 3 of the License, or				*
+*   (at your option) any later version.												*
+*																					*
+*   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of					*
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the					*
+*   GNU General Public License for more details.									*
+*																					*
+*   You should have received a copy of the GNU General Public License               *
+*   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
+************************************************************************************/
+
 #include <smo/smo.h>
+#include <smo/utils/alloc.h>
+#include <smo/api/smo_handle.h>
 
 #include <ei/ei.h>
 
@@ -6,6 +27,11 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#if defined(_MSC_VER)
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
+#endif
 
 /**
 * @brief Get the file size object
@@ -32,6 +58,7 @@ static ssize_t get_file_size(FILE *fd) {
 static unsigned char *read_shared_library(const char *path, ssize_t *size) {
 	FILE *fd;
 	unsigned char *buf;
+	ssize_t temp_size;
 
 	fd = NULL;
 	buf = NULL;
@@ -43,7 +70,7 @@ static unsigned char *read_shared_library(const char *path, ssize_t *size) {
 	}
 
 	/* Get the size of the file */
-	if ((*size = get_file_size(fd)) == -1) {
+	if ((temp_size = get_file_size(fd)) == -1) {
 		ei_stacktrace_push_errno();
 		if (fclose(fd) != 0) {
 			ei_logger_warn("Failed to close file descriptor with error message: '%s'", strerror(errno));
@@ -52,15 +79,17 @@ static unsigned char *read_shared_library(const char *path, ssize_t *size) {
 	}
 
 	/* Alloc the correct size for the buffer */
-	smo_safe_alloc(buf, unsigned char, *size);
+	smo_safe_alloc(buf, unsigned char, temp_size);
 
-	if (!fread(buf, *size, 1, fd)) {
+	if (!fread(buf, temp_size, 1, fd)) {
 		ei_stacktrace_push_errno();
 		if (fclose(fd) != 0) {
 			ei_logger_warn("Failed to close file descriptor with error message: '%s'", strerror(errno));
 		}
 		return NULL;
 	}
+
+	*size = temp_size;
 
 	if (fclose(fd) != 0) {
 		ei_logger_warn("Failed to close file descriptor with error message: '%s'", strerror(errno));
@@ -72,7 +101,7 @@ static unsigned char *read_shared_library(const char *path, ssize_t *size) {
 int main(int argc, char **argv) {
 	unsigned char *buf;
 	ssize_t size;
-	void *shared_object_handle;
+	smo_handle *handle;
 	typedef void(*hello_world_func)(void);
 	hello_world_func hello_world;
 
@@ -83,7 +112,7 @@ int main(int argc, char **argv) {
 
 	size = -1;
 	buf = NULL;
-	shared_object_handle = NULL;
+	handle = NULL;
 
 	/* Initialize LibErrorInterceptor for error handling */
 	if (!ei_init()) {
@@ -96,34 +125,20 @@ int main(int argc, char **argv) {
 		goto clean_up;
 	}
 
-	if (!(shared_object_handle = smo_open(buf, size))) {
+	if (!(handle = smo_open("id", buf, size))) {
 		ei_stacktrace_push_msg("Failed to open sharfed memory object from specified buffer");
 		goto clean_up;
 	}
 
-	/* Disallow GCC error of Wpedantic flag due to function ptr cast */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-	if (!(hello_world = (hello_world_func)dlsym(shared_object_handle, "hello_world"))) {
-		ei_stacktrace_push_msg("Failed to get function ptr with error message: '%s'", dlerror());
+	if (!(hello_world = smo_get_symbol(handle, "hello_world"))) {
+		ei_stacktrace_push_msg("Failed to get symbol of function hello");
 		goto clean_up;
 	}
-	/**
-	* At this point the "Hello world" message is already printed,
-	* because the function is marked as constructor in the shared library.
-	*/
-#pragma GCC diagnostic pop
 
-	/* Print the message a second time by using the function ptr, to be sure it's worked correctly ! */
 	hello_world();
 
 clean_up:
-	/* Close the shared object handle */
-	if (shared_object_handle) {
-		dlclose(shared_object_handle);
-	}
-	/* Clean-up the buffer of the library */
-	smo_safe_free(buf);
+	smo_handle_destroy(handle);
 	/* Check if an error was recorded */
 	if (ei_stacktrace_is_filled()) {
 		ei_logger_stacktrace("An error occurred with the following stacktrace :");

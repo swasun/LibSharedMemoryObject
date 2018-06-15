@@ -17,18 +17,35 @@
 *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
 ************************************************************************************/
 
-#ifndef SHAREDMEMORYOBJECT_MSO_H
-#define SHAREDMEMORYOBJECT_MSO_H
+/**
+ *  @file      bool.h
+ *  @brief     Portable way to represent bool type.
+ *  @author    Charly Lamothe
+ *  @copyright GNU Public License.
+ */
 
-#include <smo/api/smo_handle.h>
-#include <smo/utils/bool.h>
+#ifndef SHAREDMEMORYOBJECT_BOOL_H
+#define SHAREDMEMORYOBJECT_BOOL_H
 
-#include <stddef.h>
+/* C99 */
+#if __STDC_VERSION__ >= 199901L
 
-smo_handle *smo_open(const char *id, unsigned char *data, size_t size);
+#include <stdbool.h>
 
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name);
+#elif defined(_MSC_VER)
 
-bool smo_close(smo_handle *handle);
+#define bool _Bool
+#define true 1
+#define false 0
+#define __bool_true_false_are_defined 1
+
+#else /* Not C99 */
+
+typedef enum {
+    false,
+    true
+} bool;
 
 #endif
+
+#endif /* BOOL_H */

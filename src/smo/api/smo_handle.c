@@ -17,18 +17,25 @@
 *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
 ************************************************************************************/
 
-#ifndef SHAREDMEMORYOBJECT_MSO_H
-#define SHAREDMEMORYOBJECT_MSO_H
-
 #include <smo/api/smo_handle.h>
-#include <smo/utils/bool.h>
+#include <smo/utils/alloc.h>
 
-#include <stddef.h>
+#include <string.h>
 
-smo_handle *smo_open(const char *id, unsigned char *data, size_t size);
+smo_handle *smo_handle_create(const char *id) {
+	smo_handle *handle;
 
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name);
+	smo_safe_alloc(handle, smo_handle, 1);
+	handle->object = NULL;
+	smo_safe_alloc(handle->id, char, strlen(id) + 1);
+	strcpy(handle->id, id);
 
-bool smo_close(smo_handle *handle);
+	return handle;
+}
 
-#endif
+void smo_handle_destroy(smo_handle *handle) {
+	if (handle) {
+		smo_safe_free(handle->id);
+		smo_safe_free(handle);
+	}
+}

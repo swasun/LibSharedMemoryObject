@@ -4,7 +4,7 @@
 
 # --- PROJECT ---
 
-PROJECT(mso C)
+PROJECT(smo C)
 cmake_minimum_required(VERSION 3.8)
 
 
@@ -44,19 +44,10 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")     ## (not debug)
         add_compile_options("-O3")            ### No Optimization
         set(CMAKE_EXE_LINKER_FLAGS "-s")      ### Strip binary (only in release mode)
     endif ()
-else ()
-    add_compile_options("-g")
 endif ()
 
 if (UNIX)
     add_compile_options("-std=gnu99" "-pthread" "-ldl")
-elseif (WIN32)
-    #add_compile_options("std=c99" "lkernel32" "lntdll")
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_compile_options("static-libgcc" "ggdb")
-    endif ()
-else ()
-    add_compile_options("-std=c99")
 endif ()
 
 if (UNIX)
@@ -110,34 +101,36 @@ set(PROJECT_NAME_SHARED "${PROJECT_NAME}_shared")
 # Load source files
 
 if (WIN32)
-    file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/windows/*.*"
-    smo.h)
+    file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/impl/windows/*.*"
+		"${SRC_PATH}/smo/api/*.*" "${SRC_PATH}/smo/utils/*.*")
 else ()
-    file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/linux/*.*"
-        smo.h)
+    file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/impl/linux/*.*"
+        "${SRC_PATH}/smo/api/*.*" "${SRC_PATH}/smo/utils/*.*")
 endif ()
 
 # Build shared library
 add_library(${PROJECT_NAME_SHARED} SHARED ${PROGRAM_TARGET_SRC_FILES})
 target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${SRC_PATH}")
-set_target_properties(${PROJECT_NAME_SHARED} PROPERTIES OUTPUT_NAME mso)
+set_target_properties(${PROJECT_NAME_SHARED} PROPERTIES OUTPUT_NAME smo)
 target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
 	target_link_libraries(${PROJECT_NAME_SHARED} "-lei")
 elseif (WIN32)
 	target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
 
 # Build static library
 add_library(${PROJECT_NAME_STATIC} STATIC ${PROGRAM_TARGET_SRC_FILES})
 target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${SRC_PATH}")
-set_target_properties(${PROJECT_NAME_STATIC} PROPERTIES OUTPUT_NAME mso)
+set_target_properties(${PROJECT_NAME_STATIC} PROPERTIES OUTPUT_NAME smo)
 target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
 	target_link_libraries(${PROJECT_NAME_STATIC} "-lei")
 elseif (WIN32)
 	target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
 # --- INSTALL ---
@@ -168,27 +161,25 @@ elseif (WIN32)
 	)
 endif ()
 
-# Build simple example
+# Build hello world example
+file(GLOB hello_world_example_path "${EXAMPLES_PATH}/hello_world_example.c")
+get_filename_component(hello_world_example ${hello_world_example_path} NAME_WE)
+add_executable(${hello_world_example} ${hello_world_example_path})
 if (UNIX)
-	file(GLOB simple_example_path "${EXAMPLES_PATH}/linux_simple_example.c")
+	target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC} "-ldl" "-lrt")
+	target_link_libraries(${hello_world_example} "-lei")
 elseif (WIN32)
-	file(GLOB simple_example_path "${EXAMPLES_PATH}/linux_simple_example.c")
+	target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC})
+	target_link_libraries(${hello_world_example} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_include_directories(${hello_world_example} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
-get_filename_component(simple_example ${simple_example_path} NAME_WE)
-add_executable(${simple_example} ${simple_example_path})
-if (UNIX)
-	target_link_libraries(${simple_example} ${PROJECT_NAME_STATIC} "-ldl" "-lrt")
-	target_link_libraries(${simple_example} "-lei")
-elseif (WIN32)
-	target_link_libraries(${simple_example} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
-	target_include_directories(${simple_example} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
-endif ()
-set_target_properties(${simple_example} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
+set_target_properties(${hello_world_example} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
 
-# Build simple library
+# Build hello world library
 if (UNIX)
-    add_library(simple SHARED "${EXAMPLES_PATH}/linux_shared_example.c")
+	file(GLOB hello_world_library "${EXAMPLES_PATH}/linux_hello_world_library.c")
 elseif (WIN32)
-    add_library(simple SHARED "${EXAMPLES_PATH}/windows_shared_example.c")
+	file(GLOB hello_world_library "${EXAMPLES_PATH}/windows_hello_world_library.c")
 endif ()
-set_target_properties(simple PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
+add_library(hello_world_library SHARED ${hello_world_library})
+set_target_properties(hello_world_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
