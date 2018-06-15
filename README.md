@@ -1,6 +1,6 @@
 ## Description
 
-LibSharedMemoryObject provides a simple API to load from memory shared library on both Linux and Windows.
+LibSharedMemoryObject provides a simple API to load from memory shared library on both Linux (.so) and Windows (.dll).
 
 ## API
 
@@ -29,4 +29,4 @@ And that's all you need !
 ## Implementation
 
 * The Windows implementation is from [MemoryModule](https://github.com/fancycode/MemoryModule), a library to load DLL from memory.
-* The Linux implementation opened a file descriptor in rams with `shm_open()` or the `syscall __NR_memfd_create` based on you Kernel version.
+* The Linux implementation opened a file descriptor in rams with `shm_open()` or the syscall `__NR_memfd_create` based on you Kernel version.
