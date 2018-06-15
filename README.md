@@ -11,7 +11,7 @@ smo_handle *handle;
 typedef void(*hello_world_func)(void);
 hello_world_func hello_world;
 
-// Where buffer and size are the content of your memory library
+/* Where buffer and size are the content of your memory library */
 handle = smo_open("your_id", buffer, size);
 
 /**
@@ -20,7 +20,7 @@ handle = smo_open("your_id", buffer, size);
  */
 hello_world = smo_get_function(handle, "hello_world");
 
-// Print the hello world message from library
+/* Print the hello world message from library */
 hello_world();
 
 smo_close(handle);
