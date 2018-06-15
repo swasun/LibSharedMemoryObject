@@ -11,11 +11,17 @@ smo_handle *handle;
 typedef void(*hello_world_func)(void);
 hello_world_func hello_world;
 
-handle = smo_open("your_id", buffer, size); // where buffer and size are the content of your memory library
+// Where buffer and size are the content of your memory library
+handle = smo_open("your_id", buffer, size);
 
-hello_world = smo_get_function(handle, "hello_world"); // hello world is now a ptr of the function hello_world() located in the memory library
+/**
+ * hello world is now a ptr of the function hello_world()
+ * located in the memory library
+ */
+hello_world = smo_get_function(handle, "hello_world");
 
-hello_world(); // print the hello world message from library
+// Print the hello world message from library
+hello_world();
 
 smo_close(handle);
 ```
