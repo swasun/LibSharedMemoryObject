@@ -27,7 +27,7 @@
 
 smo_handle *smo_open(const char *id, unsigned char *data, size_t size);
 
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name);
+void *smo_get_function(smo_handle *handle, const char *function_name);
 
 bool smo_close(smo_handle *handle);
 

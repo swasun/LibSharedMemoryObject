@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 		goto clean_up;
 	}
 
-	if (!(hello_world = smo_get_symbol(handle, "hello_world"))) {
+	if (!(hello_world = smo_get_function(handle, "hello_world"))) {
 		ei_stacktrace_push_msg("Failed to get symbol of function hello");
 		goto clean_up;
 	}

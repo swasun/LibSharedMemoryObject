@@ -44,14 +44,14 @@ smo_handle *smo_open(const char *id, unsigned char *data, size_t size) {
 	return handle;
 }
 
-void *smo_get_symbol(smo_handle *handle, const char *symbol_name) {
+void *smo_get_function(smo_handle *handle, const char *function_name) {
 	void *symbol;
 	char *error_buffer;
 
 	ei_check_parameter_or_return(handle);
-	ei_check_parameter_or_return(symbol_name);
+	ei_check_parameter_or_return(function_name);
 	
-	if (!(symbol = MemoryGetProcAddress(handle->object, symbol_name))) {
+	if (!(symbol = MemoryGetProcAddress(handle->object, function_name))) {
 		ei_get_last_werror(error_buffer);
 		ei_stacktrace_push_msg("Failed to get symbol with error message: '%s'", error_buffer);
 		return NULL;
