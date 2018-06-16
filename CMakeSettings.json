@@ -3,6 +3,7 @@
 
   "environments": [
     {
+      "name":  "${name}",
       "buildPath": "${projectDir}/build/${name}",
       //"installPath": "${env.PROGRAMFILES}\\LibSharedMemoryObject\\${name}"
       "installPath": "C:\\LibSharedMemoryObject\\${name}"

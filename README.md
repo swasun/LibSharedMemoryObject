@@ -36,3 +36,11 @@ And that's all you need !
 
 * The Windows implementation is from [MemoryModule](https://github.com/fancycode/MemoryModule), a library to load DLL from memory.
 * The Linux implementation opened a file descriptor in rams with `shm_open()` or the syscall `__NR_memfd_create` based on you Kernel version.
+
+### Cross-plateform
+
+Tested on:
+* Windows x86
+* Windows 64
+* Ubuntu 14.04
+* Ubuntu 16.04
