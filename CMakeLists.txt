@@ -7,7 +7,6 @@
 PROJECT(smo C)
 cmake_minimum_required(VERSION 3.8)
 
-
 # --- GLOBAL OPTIONS ---
 
 set(CMAKE_VERBOSE_MAKEFILE on)
@@ -116,7 +115,7 @@ target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
 	target_link_libraries(${PROJECT_NAME_SHARED} "-lei")
 elseif (WIN32)
-	target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei_static.lib)
 	target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
@@ -124,12 +123,12 @@ endif ()
 # Build static library
 add_library(${PROJECT_NAME_STATIC} STATIC ${PROGRAM_TARGET_SRC_FILES})
 target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${SRC_PATH}")
-set_target_properties(${PROJECT_NAME_STATIC} PROPERTIES OUTPUT_NAME smo)
+set_target_properties(${PROJECT_NAME_STATIC} PROPERTIES OUTPUT_NAME smo_static)
 target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
 	target_link_libraries(${PROJECT_NAME_STATIC} "-lei")
 elseif (WIN32)
-	target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei_static.lib)
 	target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
@@ -170,7 +169,7 @@ if (UNIX)
 	target_link_libraries(${hello_world_example} "-lei")
 elseif (WIN32)
 	target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC})
-	target_link_libraries(${hello_world_example} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei.lib)
+	target_link_libraries(${hello_world_example} ${CMAKE_CURRENT_SOURCE_DIR}/lib/ei_static.lib)
 	target_include_directories(${hello_world_example} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 set_target_properties(${hello_world_example} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
