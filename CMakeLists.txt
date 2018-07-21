@@ -1,5 +1,21 @@
-## @brief LibSharedMemoryObject
-## @author Charly Lamothe
+ ##########################################################################################
+ # Copyright (C) 2018 by Charly Lamothe                                                   #
+ #                                                                                        #
+ # This file is part of LibSharedMemoryObject.                                            #
+ #                                                                                        #
+ #   LibSharedMemoryObject is free software: you can redistribute it and/or modify        #
+ #   it under the terms of the GNU General Public License as published by                 #
+ #   the Free Software Foundation, either version 3 of the License, or                    #
+ #   (at your option) any later version.                                                  #
+ #                                                                                        #
+ #   LibSharedMemoryObject is distributed in the hope that it will be useful,             #
+ #   but WITHOUT ANY WARRANTY; without even the implied warranty of                       #
+ #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                        #
+ #   GNU General Public License for more details.                                         #
+ #                                                                                        #
+ #   You should have received a copy of the GNU General Public License                    #
+ #   along with LibSharedMemoryObject.  If not, see <http://www.gnu.org/licenses/>.       #
+ ##########################################################################################
 
 
 # --- PROJECT ---
@@ -50,9 +66,9 @@ if (UNIX)
 endif ()
 
 if (UNIX)
-	add_compile_options("-Wall" "-Werror" "-pedantic" "-fno-builtin")
+    add_compile_options("-Wall" "-Werror" "-pedantic" "-fno-builtin")
 elseif (WIN32)
-	set(CMAKE_C_FLAGS "${CMAKE_ENABLE_C99}")
+    set(CMAKE_C_FLAGS "${CMAKE_ENABLE_C99}")
 endif ()
 
 if (WIN32)
@@ -66,7 +82,7 @@ if (WIN32)
     endmacro()
     get_WIN32_WINNT(ver)
     add_definitions(-D_WIN32_WINNT=${ver})
-	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 
 # CCache
@@ -82,14 +98,14 @@ endif()
 # Search pthread
 
 if (UNIX)
-	find_package (Threads)
+    find_package (Threads)
 endif ()
 
 # Search LibErrorInterceptor
 
 if (WIN32)
-	set(LIBERRORINTERCEPTOR_INCLUDE "C:\\LibErrorInterceptor\\$ENV{name}\\include")
-	set(LIBERRORINTERCEPTOR_LIB "C:\\LibErrorInterceptor\\$ENV{name}\\lib\\ei_static.lib")
+    set(LIBERRORINTERCEPTOR_INCLUDE "C:\\LibErrorInterceptor\\$ENV{name}\\include")
+    set(LIBERRORINTERCEPTOR_LIB "C:\\LibErrorInterceptor\\$ENV{name}\\lib\\ei_static.lib")
 endif ()
 
 # --- BUILD LIBSHAREDMEMORYOBJECT ---
@@ -102,7 +118,7 @@ set(PROJECT_NAME_SHARED "${PROJECT_NAME}_shared")
 
 if (WIN32)
     file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/impl/windows/*.*"
-		"${SRC_PATH}/smo/api/*.*" "${SRC_PATH}/smo/utils/*.*")
+        "${SRC_PATH}/smo/api/*.*" "${SRC_PATH}/smo/utils/*.*")
 else ()
     file(GLOB_RECURSE PROGRAM_TARGET_SRC_FILES "${SRC_PATH}/smo/impl/linux/*.*"
         "${SRC_PATH}/smo/api/*.*" "${SRC_PATH}/smo/utils/*.*")
@@ -114,10 +130,10 @@ target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${SRC_PATH}")
 set_target_properties(${PROJECT_NAME_SHARED} PROPERTIES OUTPUT_NAME smo)
 target_link_libraries(${PROJECT_NAME_SHARED} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
-	target_link_libraries(${PROJECT_NAME_SHARED} "-lei")
+    target_link_libraries(${PROJECT_NAME_SHARED} "-lei")
 elseif (WIN32)
-	target_link_libraries(${PROJECT_NAME_SHARED} ${LIBERRORINTERCEPTOR_LIB})
-	target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
+    target_link_libraries(${PROJECT_NAME_SHARED} ${LIBERRORINTERCEPTOR_LIB})
+    target_include_directories(${PROJECT_NAME_SHARED} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
 
@@ -127,10 +143,10 @@ target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${SRC_PATH}")
 set_target_properties(${PROJECT_NAME_STATIC} PROPERTIES OUTPUT_NAME smo_static)
 target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_THREAD_LIBS_INIT})
 if (UNIX)
-	target_link_libraries(${PROJECT_NAME_STATIC} "-lei")
+    target_link_libraries(${PROJECT_NAME_STATIC} "-lei")
 elseif (WIN32)
-	target_link_libraries(${PROJECT_NAME_STATIC} ${LIBERRORINTERCEPTOR_LIB})
-	target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
+    target_link_libraries(${PROJECT_NAME_STATIC} ${LIBERRORINTERCEPTOR_LIB})
+    target_include_directories(${PROJECT_NAME_STATIC} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 
 # --- INSTALL ---
@@ -145,20 +161,20 @@ if (UNIX)
     # Copy shared library
     install (TARGETS ${PROJECT_NAME_SHARED} LIBRARY DESTINATION "/usr/lib")
 elseif (WIN32)
-	# Copy includes
+    # Copy includes
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN "*.h")
 
-	# Copy static library
-	install (
-		TARGETS ${PROJECT_NAME_STATIC}
-		ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-		LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-	)
+    # Copy static library
+    install (
+        TARGETS ${PROJECT_NAME_STATIC}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    )
 
-	install (
-		TARGETS ${PROJECT_NAME_SHARED}
-		RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-	)
+    install (
+        TARGETS ${PROJECT_NAME_SHARED}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    )
 endif ()
 
 # Build hello world example
@@ -166,20 +182,20 @@ file(GLOB hello_world_example_path "${EXAMPLES_PATH}/hello_world_example.c")
 get_filename_component(hello_world_example ${hello_world_example_path} NAME_WE)
 add_executable(${hello_world_example} ${hello_world_example_path})
 if (UNIX)
-	target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC} "-ldl" "-lrt")
-	target_link_libraries(${hello_world_example} "-lei")
+    target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC} "-ldl" "-lrt")
+    target_link_libraries(${hello_world_example} "-lei")
 elseif (WIN32)
-	target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC})
-	target_link_libraries(${hello_world_example} ${LIBERRORINTERCEPTOR_LIB})
-	target_include_directories(${hello_world_example} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
+    target_link_libraries(${hello_world_example} ${PROJECT_NAME_STATIC})
+    target_link_libraries(${hello_world_example} ${LIBERRORINTERCEPTOR_LIB})
+    target_include_directories(${hello_world_example} PUBLIC "${LIBERRORINTERCEPTOR_INCLUDE}")
 endif ()
 set_target_properties(${hello_world_example} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})
 
 # Build hello world library
 if (UNIX)
-	file(GLOB hello_world_library "${EXAMPLES_PATH}/linux_hello_world_library.c")
+    file(GLOB hello_world_library "${EXAMPLES_PATH}/linux_hello_world_library.c")
 elseif (WIN32)
-	file(GLOB hello_world_library "${EXAMPLES_PATH}/windows_hello_world_library.c")
+    file(GLOB hello_world_library "${EXAMPLES_PATH}/windows_hello_world_library.c")
 endif ()
 add_library(hello_world_library SHARED ${hello_world_library})
 set_target_properties(hello_world_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${EXAMPLES_OUTPUT_PATH})

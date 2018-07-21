@@ -1,21 +1,21 @@
-/************************************************************************************
-* Copyright (C) 2018 by Charly Lamothe												*
-*																					*
-* This file is part of LibSharedMemorySlot.                                         *
-*																					*
-*   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
-*   it under the terms of the GNU General Public License as published by			*
-*   the Free Software Foundation, either version 3 of the License, or				*
-*   (at your option) any later version.												*
-*																					*
-*   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of					*
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the					*
-*   GNU General Public License for more details.									*
-*																					*
-*   You should have received a copy of the GNU General Public License               *
-*   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
-************************************************************************************/
+/*************************************************************************************
+ * Copyright (C) 2018 by Charly Lamothe                                              *
+ *                                                                                   *
+ * This file is part of LibSharedMemorySlot.                                         *
+ *                                                                                   *
+ *   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
+ *   it under the terms of the GNU General Public License as published by            *
+ *   the Free Software Foundation, either version 3 of the License, or               *
+ *   (at your option) any later version.                                             *
+ *                                                                                   *
+ *   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ *   GNU General Public License for more details.                                    *
+ *                                                                                   *
+ *   You should have received a copy of the GNU General Public License               *
+ *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
+ ************************************************************************************/
 
 /**
  * @brief 
@@ -54,7 +54,7 @@ static bool check_if_kernel_is_greater_than_3_17() {
 
     errno = 0;
     if (uname(&buffer) != 0) {
-		ei_stacktrace_push_errno();
+        ei_stacktrace_push_errno();
         return false;
     }
 
@@ -68,123 +68,123 @@ static inline int memfd_create(const char *name, unsigned int flags) {
 
 /* Returns a file descriptor where we can write our shared object */
 static int open_ramfs(const char *id) {
-	int shm_fd;
+    int shm_fd;
 
-	/* Using shm_open() if kernel is under version 3.17 */
-	if (!check_if_kernel_is_greater_than_3_17()) {
-		if ((shm_fd = shm_open(id, O_RDWR | O_CREAT, S_IRWXU)) < 0) {
-			ei_stacktrace_push_errno();
-			return false;
-		}
-	}
-	else {
-		if ((shm_fd = memfd_create(id, 1)) < 0) {
-			ei_stacktrace_push_errno();
-			return false;
-		}
-	}
+    /* Using shm_open() if kernel is under version 3.17 */
+    if (!check_if_kernel_is_greater_than_3_17()) {
+        if ((shm_fd = shm_open(id, O_RDWR | O_CREAT, S_IRWXU)) < 0) {
+            ei_stacktrace_push_errno();
+            return false;
+        }
+    }
+    else {
+        if ((shm_fd = memfd_create(id, 1)) < 0) {
+            ei_stacktrace_push_errno();
+            return false;
+        }
+    }
 
-	return shm_fd;
+    return shm_fd;
 }
 
 static void *load_shared_object(const char *id, int shm_fd) {
-	char *path;
-	void *shared_object_handle;
+    char *path;
+    void *shared_object_handle;
 
-	path = NULL;
-	shared_object_handle = NULL;
+    path = NULL;
+    shared_object_handle = NULL;
 
-	smo_safe_alloc(path, char, 1024);
+    smo_safe_alloc(path, char, 1024);
 
-	ei_logger_trace("Trying to load shared object...");
+    ei_logger_trace("Trying to load shared object...");
 
-	if (check_if_kernel_is_greater_than_3_17()) {
-		snprintf(path, 1024, "/proc/%d/fd/%d", getpid(), shm_fd);
-	} else {
-		snprintf(path, 1024, "/dev/shm/%s", id);
-	}
+    if (check_if_kernel_is_greater_than_3_17()) {
+        snprintf(path, 1024, "/proc/%d/fd/%d", getpid(), shm_fd);
+    } else {
+        snprintf(path, 1024, "/dev/shm/%s", id);
+    }
 
-	if (!(shared_object_handle = dlopen(path, RTLD_LAZY))) {
-		ei_stacktrace_push_msg("Failed to load shared object with error message: '%s'", dlerror());
-		smo_safe_free(path);
-		return NULL;
-	}
+    if (!(shared_object_handle = dlopen(path, RTLD_LAZY))) {
+        ei_stacktrace_push_msg("Failed to load shared object with error message: '%s'", dlerror());
+        smo_safe_free(path);
+        return NULL;
+    }
 
-	smo_safe_free(path);
+    smo_safe_free(path);
 
-	return shared_object_handle;
+    return shared_object_handle;
 }
 
 smo_handle *smo_open(const char *id, unsigned char *data, size_t size) {
-	smo_handle *handle;
+    smo_handle *handle;
     void *shared_object_handle;
-	int shm_fd;
+    int shm_fd;
 
-	ei_check_parameter_or_return(id);
-	ei_check_parameter_or_return(data);
-	ei_check_parameter_or_return(size > 0);
+    ei_check_parameter_or_return(id);
+    ei_check_parameter_or_return(data);
+    ei_check_parameter_or_return(size > 0);
 
-	shared_object_handle = NULL;
-	shm_fd = -1;
+    shared_object_handle = NULL;
+    shm_fd = -1;
 
-	if (!(shm_fd = open_ramfs(id))) {
-		ei_stacktrace_push_msg("Failed to open ramfs file descriptor");	
-		return NULL;
-	}
+    if (!(shm_fd = open_ramfs(id))) {
+        ei_stacktrace_push_msg("Failed to open ramfs file descriptor");    
+        return NULL;
+    }
 
-	if (write(shm_fd, data, size) < 0) {
-		ei_stacktrace_push_errno();
-		if (close(shm_fd) != 0 && errno != 0) {
-			ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
-		}
-		return NULL;
-	}
+    if (write(shm_fd, data, size) < 0) {
+        ei_stacktrace_push_errno();
+        if (close(shm_fd) != 0 && errno != 0) {
+            ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
+        }
+        return NULL;
+    }
 
-	if (!(shared_object_handle = load_shared_object(id, shm_fd))) {
-		ei_stacktrace_push_msg("Failed to load shared object into shm file descriptor");
-		if (close(shm_fd) != 0 && errno != 0) {
-			ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
-		}
-		return NULL;	
-	}
+    if (!(shared_object_handle = load_shared_object(id, shm_fd))) {
+        ei_stacktrace_push_msg("Failed to load shared object into shm file descriptor");
+        if (close(shm_fd) != 0 && errno != 0) {
+            ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
+        }
+        return NULL;    
+    }
 
-	if (close(shm_fd) != 0 && errno != 0) {
-		ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
-	}
+    if (close(shm_fd) != 0 && errno != 0) {
+        ei_logger_warn("Failed to close shm file descriptor with error message: '%s'", strerror(errno));
+    }
 
-	handle = smo_handle_create(id);
-	handle->object = shared_object_handle;
+    handle = smo_handle_create(id);
+    handle->object = shared_object_handle;
 
-	return handle;
+    return handle;
 }
 
 void *smo_get_function(smo_handle *handle, const char *function_name) {
-	void *symbol;
+    void *symbol;
 
-	ei_check_parameter_or_return(handle);
-	ei_check_parameter_or_return(function_name);
+    ei_check_parameter_or_return(handle);
+    ei_check_parameter_or_return(function_name);
 
-	if (!(symbol = dlsym(handle->object, function_name))) {
-		ei_stacktrace_push_msg("Failed to get symbol with error message: '%s'", dlerror());
-		return NULL;
-	}
+    if (!(symbol = dlsym(handle->object, function_name))) {
+        ei_stacktrace_push_msg("Failed to get symbol with error message: '%s'", dlerror());
+        return NULL;
+    }
 
-	return symbol;
+    return symbol;
 }
 
 bool smo_close(smo_handle *handle) {
-	if (!handle) {
-		ei_logger_warn("smo handle already closed");
-		return true;
-	}
+    if (!handle) {
+        ei_logger_warn("smo handle already closed");
+        return true;
+    }
 
-	if (dlclose(handle->object) != 0) {
-		ei_stacktrace_push_msg("Failed to close handle object with error message: '%s'", dlerror());
-		smo_handle_destroy(handle);
-		return false;
-	}
+    if (dlclose(handle->object) != 0) {
+        ei_stacktrace_push_msg("Failed to close handle object with error message: '%s'", dlerror());
+        smo_handle_destroy(handle);
+        return false;
+    }
 
-	smo_handle_destroy(handle);
+    smo_handle_destroy(handle);
 
-	return true;
+    return true;
 }

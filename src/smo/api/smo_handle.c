@@ -1,21 +1,21 @@
-/************************************************************************************
-* Copyright (C) 2018 by Charly Lamothe												*
-*																					*
-* This file is part of LibSharedMemorySlot.                                         *
-*																					*
-*   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
-*   it under the terms of the GNU General Public License as published by			*
-*   the Free Software Foundation, either version 3 of the License, or				*
-*   (at your option) any later version.												*
-*																					*
-*   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of					*
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the					*
-*   GNU General Public License for more details.									*
-*																					*
-*   You should have received a copy of the GNU General Public License               *
-*   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
-************************************************************************************/
+/*************************************************************************************
+ * Copyright (C) 2018 by Charly Lamothe                                              *
+ *                                                                                   *
+ * This file is part of LibSharedMemorySlot.                                         *
+ *                                                                                   *
+ *   LibSharedMemorySlot is free software: you can redistribute it and/or modify     *
+ *   it under the terms of the GNU General Public License as published by            *
+ *   the Free Software Foundation, either version 3 of the License, or               *
+ *   (at your option) any later version.                                             *
+ *                                                                                   *
+ *   LibSharedMemorySlot is distributed in the hope that it will be useful,          *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of                  *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                   *
+ *   GNU General Public License for more details.                                    *
+ *                                                                                   *
+ *   You should have received a copy of the GNU General Public License               *
+ *   along with LibSharedMemorySlot.  If not, see <http://www.gnu.org/licenses/>.    *
+ ************************************************************************************/
 
 #include <smo/api/smo_handle.h>
 #include <smo/utils/alloc.h>
@@ -23,19 +23,19 @@
 #include <string.h>
 
 smo_handle *smo_handle_create(const char *id) {
-	smo_handle *handle;
+    smo_handle *handle;
 
-	smo_safe_alloc(handle, smo_handle, 1);
-	handle->object = NULL;
-	smo_safe_alloc(handle->id, char, strlen(id) + 1);
-	strcpy(handle->id, id);
+    smo_safe_alloc(handle, smo_handle, 1);
+    handle->object = NULL;
+    smo_safe_alloc(handle->id, char, strlen(id) + 1);
+    strcpy(handle->id, id);
 
-	return handle;
+    return handle;
 }
 
 void smo_handle_destroy(smo_handle *handle) {
-	if (handle) {
-		smo_safe_free(handle->id);
-		smo_safe_free(handle);
-	}
+    if (handle) {
+        smo_safe_free(handle->id);
+        smo_safe_free(handle);
+    }
 }

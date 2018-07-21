@@ -502,14 +502,14 @@ BuildImportTable(PMEMORYMODULE module)
 
 LPVOID MemoryDefaultAlloc(LPVOID address, SIZE_T size, DWORD allocationType, DWORD protect, void* userdata)
 {
-	UNREFERENCED_PARAMETER(userdata);
-	return VirtualAlloc(address, size, allocationType, protect);
+    UNREFERENCED_PARAMETER(userdata);
+    return VirtualAlloc(address, size, allocationType, protect);
 }
 
 BOOL MemoryDefaultFree(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType, void* userdata)
 {
-	UNREFERENCED_PARAMETER(userdata);
-	return VirtualFree(lpAddress, dwSize, dwFreeType);
+    UNREFERENCED_PARAMETER(userdata);
+    return VirtualFree(lpAddress, dwSize, dwFreeType);
 }
 
 HCUSTOMMODULE MemoryDefaultLoadLibrary(LPCSTR filename, void *userdata)
