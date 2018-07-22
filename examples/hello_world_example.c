@@ -31,6 +31,8 @@
 #if defined(_MSC_VER)
 #include <basetsd.h>
 typedef SSIZE_T ssize_t;
+#else
+#include <unistd.h>
 #endif
 
 /**
@@ -130,7 +132,14 @@ int main(int argc, char **argv) {
         goto clean_up;
     }
 
+#if defined(__GNUC__)
+    _Pragma("GCC diagnostic push");
+    _Pragma("GCC diagnostic ignored \"-Wpedantic\"");
+#endif
     if (!(hello_world = smo_get_function(handle, "hello_world"))) {
+#if defined(__GNUC__)
+    _Pragma("GCC diagnostic pop");
+#endif
         ei_stacktrace_push_msg("Failed to get symbol of function hello");
         goto clean_up;
     }

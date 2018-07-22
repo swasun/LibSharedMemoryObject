@@ -22,7 +22,7 @@
 
 typedef struct {
     void *object;
-    const char *id;
+    char *id;
 } smo_handle;
 
 smo_handle *smo_handle_create(const char *id);
