@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "dlfcn.h": "c",
-        "fcntl.h": "c"
-    }
-}
