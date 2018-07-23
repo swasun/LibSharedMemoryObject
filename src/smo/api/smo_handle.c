@@ -18,16 +18,18 @@
  ************************************************************************************/
 
 #include <smo/api/smo_handle.h>
-#include <smo/utils/alloc.h>
+#include <ueum/ueum.h>
 
 #include <string.h>
 
 smo_handle *smo_handle_create(const char *id) {
     smo_handle *handle;
 
-    smo_safe_alloc(handle, smo_handle, 1);
+    handle = NULL;
+
+    ueum_safe_alloc(handle, smo_handle, 1);
     handle->object = NULL;
-    smo_safe_alloc(handle->id, char, strlen(id) + 1);
+    ueum_safe_alloc(handle->id, char, strlen(id) + 1);
     strcpy(handle->id, id);
 
     return handle;
@@ -35,7 +37,7 @@ smo_handle *smo_handle_create(const char *id) {
 
 void smo_handle_destroy(smo_handle *handle) {
     if (handle) {
-        smo_safe_free(handle->id);
-        smo_safe_free(handle);
+        ueum_safe_free(handle->id);
+        ueum_safe_free(handle);
     }
 }

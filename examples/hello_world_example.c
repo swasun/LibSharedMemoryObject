@@ -18,8 +18,8 @@
  ************************************************************************************/
 
 #include <smo/smo.h>
-#include <smo/utils/alloc.h>
 #include <smo/api/smo_handle.h>
+#include <ueum/ueum.h>
 
 #include <ei/ei.h>
 
@@ -27,13 +27,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#if defined(_MSC_VER)
-#include <basetsd.h>
-typedef SSIZE_T ssize_t;
-#else
-#include <unistd.h>
-#endif
 
 /**
 * @brief Get the file size object
@@ -81,7 +74,7 @@ static unsigned char *read_shared_library(const char *path, ssize_t *size) {
     }
 
     /* Alloc the correct size for the buffer */
-    smo_safe_alloc(buf, unsigned char, temp_size);
+    ueum_safe_alloc(buf, unsigned char, temp_size);
 
     if (!fread(buf, temp_size, 1, fd)) {
         ei_stacktrace_push_errno();
@@ -147,10 +140,12 @@ int main(int argc, char **argv) {
     hello_world();
 
 clean_up:
-    smo_handle_destroy(handle);
+    smo_close(handle);
+    ueum_safe_free(buf);
     /* Check if an error was recorded */
     if (ei_stacktrace_is_filled()) {
         ei_logger_stacktrace("An error occurred with the following stacktrace :");
+        ei_stacktrace_print();
     }
     /* Uninit the error handling library */
     ei_uninit();

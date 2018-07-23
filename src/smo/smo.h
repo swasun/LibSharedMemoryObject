@@ -21,7 +21,7 @@
 #define SHAREDMEMORYOBJECT_MSO_H
 
 #include <smo/api/smo_handle.h>
-#include <smo/utils/bool.h>
+#include <ueum/ueum.h>
 
 #include <stddef.h>
 

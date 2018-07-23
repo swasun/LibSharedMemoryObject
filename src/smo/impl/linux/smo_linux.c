@@ -27,7 +27,6 @@
  */
 
 #include <smo/smo.h>
-#include <smo/utils/alloc.h>
 
 #include <ei/ei.h>
 
@@ -94,7 +93,7 @@ static void *load_shared_object(const char *id, int shm_fd) {
     path = NULL;
     shared_object_handle = NULL;
 
-    smo_safe_alloc(path, char, 1024);
+    ueum_safe_alloc(path, char, 1024);
 
     ei_logger_trace("Trying to load shared object...");
 
@@ -106,11 +105,11 @@ static void *load_shared_object(const char *id, int shm_fd) {
 
     if (!(shared_object_handle = dlopen(path, RTLD_LAZY))) {
         ei_stacktrace_push_msg("Failed to load shared object with error message: '%s'", dlerror());
-        smo_safe_free(path);
+        ueum_safe_free(path);
         return NULL;
     }
 
-    smo_safe_free(path);
+    ueum_safe_free(path);
 
     return shared_object_handle;
 }
