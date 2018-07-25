@@ -2,3 +2,7 @@
 /build/*
 /bin/*
 .vscode
+/.vs/slnx.sqlite
+/.vs/ProjectSettings.json
+/.vs/LibSharedMemoryObject/v15/Browse.VC.opendb
+/.vs/LibSharedMemoryObject/v15/Browse.VC.db
