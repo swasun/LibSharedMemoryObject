@@ -219,11 +219,11 @@ target_include_directories(${PROJECT_NAME_STATIC} PUBLIC ${LIBSHAREDMEMORYOBJECT
 target_link_libraries(${PROJECT_NAME_STATIC} ${LIBSHAREDMEMORYOBJECT_LIBRARIES})
 target_link_libraries(${PROJECT_NAME_STATIC} ${CMAKE_THREAD_LIBS_INIT})
 
-# Copy includes
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN "*.h")
-
 
 # --- INSTALL ---
+
+# Copy includes
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include FILES_MATCHING PATTERN "*.h")
 
 # Copy static library
 install (
